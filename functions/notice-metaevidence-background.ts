@@ -30,6 +30,8 @@ export const getMetaEvidenceUriFromLogs = async (
     toBlock,
   });
 
+  console.log("~~~ received logs", logs);
+
   if (!logs.length) return;
 
   return logs.at(-1)!.args._evidence;

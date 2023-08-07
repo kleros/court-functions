@@ -51,21 +51,31 @@ export const handler: Handler = async (ev) => {
       if (data && data.length) {
         metaEvidenceUri = data.at(0)!.response.metaEvidenceUri;
       } else {
-        const response = await fetch(
-          process.env.URL +
-            "/.netlify/functions/notice-metaevidence-background" +
-            `?chainId=${chainId}` +
-            `&metaEvidenceId=${subgraphData.dispute.metaEvidenceId}` +
-            `&arbitrable=${subgraphData.dispute.arbitrated.id}` +
-            `&endBlock=${subgraphData.dispute.createdAtBlock}`,
-          { method: "POST" }
-        );
+        const { data, error } = await datalake
+          .from("court-v1-metaevidence")
+          .select("*")
+          .eq("chainId", `${chainId}`)
+          .eq("metaEvidenceId", `${subgraphData.dispute.metaEvidenceId}`);
 
-        if (!response.ok)
-          console.error(
-            "Failed to invoke background function: ",
-            await response.text()
+        if (data && data.length) {
+          metaEvidenceUri = data[0].uri;
+        } else {
+          const response = await fetch(
+            process.env.URL +
+              "/.netlify/functions/notice-metaevidence-background" +
+              `?chainId=${chainId}` +
+              `&metaEvidenceId=${subgraphData.dispute.metaEvidenceId}` +
+              `&arbitrable=${subgraphData.dispute.arbitrated.id}` +
+              `&endBlock=${subgraphData.dispute.createdAtBlock}`,
+            { method: "POST" }
           );
+
+          if (!response.ok)
+            console.error(
+              "Failed to invoke background function: ",
+              await response.text()
+            );
+        }
       }
     }
 
