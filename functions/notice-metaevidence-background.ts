@@ -25,6 +25,7 @@ export const getMetaEvidenceUriFromLogs = async (
     metaEvidenceId,
     arbitrable,
     toBlock,
+    startBlock: klerosStartBlock[chainId],
   });
 
   const test = await publicClient[chainId].getLogs({
@@ -50,6 +51,11 @@ export const getMetaEvidenceUriFromLogs = async (
   const batches = await Promise.all(
     [...Array(nbBatches).keys()].map((idx) => {
       const fromBlock = startBlock + batchSize * BigInt(idx);
+      console.log({
+        fromBlock,
+        toBlock:
+          fromBlock + batchSize > toBlock ? toBlock : fromBlock + batchSize,
+      });
       return publicClient[chainId].getLogs({
         address: arbitrable,
         event: parseAbiItem(
