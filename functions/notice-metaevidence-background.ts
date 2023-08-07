@@ -42,6 +42,7 @@ export const handler: Handler = async (ev) => {
 
     const params = ev.queryStringParameters;
 
+    console.log("~~~ called bg function", params);
     const chainId = validateChainId(params.chainId, chainIds);
     const metaEvidenceId = validateBigInt(
       params.metaEvidenceId,
@@ -50,12 +51,14 @@ export const handler: Handler = async (ev) => {
     const arbitrable = validateAddress(params.arbitrable, "arbitrable");
     const endBlock = validateBigInt(params.endBlock, "endBlock");
 
+    console.log("~~~ calling getMetaEvidenceUriFromLogs");
     const uri = await getMetaEvidenceUriFromLogs(
       chainId,
       metaEvidenceId,
       arbitrable,
       endBlock
     );
+    console.log("~~~ received getMetaEvidenceUriFromLogs", uri);
 
     if (!uri)
       throw new Error(

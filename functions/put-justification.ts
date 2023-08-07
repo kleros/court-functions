@@ -1,6 +1,4 @@
 import { Handler } from "@netlify/functions";
-import { Logtail } from "@logtail/node";
-import { createClient } from "@supabase/supabase-js";
 import { StatusCodes } from "http-status-codes";
 import {
   Address,

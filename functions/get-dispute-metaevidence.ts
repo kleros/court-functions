@@ -53,12 +53,12 @@ export const handler: Handler = async (ev) => {
       } else {
         const response = await fetch(
           process.env.URL +
-            "/.netlify/functions/notice-metaevidence-background",
-          {
-            method: "POST",
-            body: JSON.stringify({ chainId, disputeId }),
-            headers: { "Content-Type": "application/json" },
-          }
+            "/.netlify/functions/notice-metaevidence-background" +
+            `?chainId=${chainId}` +
+            `&metaEvidenceId=${subgraphData.dispute.metaEvidenceId}` +
+            `&arbitrable=${subgraphData.dispute.arbitrated.id}` +
+            `&endBlock=${subgraphData.dispute.createdAtBlock}`,
+          { method: "POST" }
         );
 
         if (!response.ok)
