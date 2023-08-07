@@ -2,18 +2,19 @@ import { GraphQLClient } from "graphql-request";
 import { gnosis, mainnet, sepolia } from "viem/chains";
 import { Sdk, getSdk } from "../generated/graphql";
 
-const subgraphName = {
-  [mainnet.id]: "andreimvp/kleros-display-mainnet",
-  [gnosis.id]: "andreimvp/kleros-display",
-  [sepolia.id]: "andreimvp/eeeeh",
+const subgraphUrl = {
+  [mainnet.id]:
+    "https://api.thegraph.com/subgraphs/name/andreimvp/kleros-display-mainnet",
+  [gnosis.id]:
+    "https://api.thegraph.com/subgraphs/name/andreimvp/kleros-display",
+  [sepolia.id]:
+    "https://api.studio.thegraph.com/query/50849/kleros-sepolia-ss/version/latest",
 } as const;
 
-export const sdk = Object.entries(subgraphName).reduce(
-  (acc, [chainId, name]) => ({
+export const sdk = Object.entries(subgraphUrl).reduce(
+  (acc, [chainId, url]) => ({
     ...acc,
-    [+chainId]: getSdk(
-      new GraphQLClient(`https://api.thegraph.com/subgraphs/name/${name}`)
-    ),
+    [+chainId]: getSdk(new GraphQLClient(url)),
   }),
-  {} as Record<Supported<(keyof typeof subgraphName)[]>, Sdk>
+  {} as Record<Supported<(keyof typeof subgraphUrl)[]>, Sdk>
 );
