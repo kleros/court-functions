@@ -63,7 +63,6 @@ export const handler: Handler = async (ev) => {
 
     const params = ev.queryStringParameters;
 
-    console.log("~~~ called bg function", params);
     const chainId = validateChainId(params.chainId, chainIds);
     const metaEvidenceId = validateBigInt(
       params.metaEvidenceId,
@@ -76,6 +75,7 @@ export const handler: Handler = async (ev) => {
       .from("court-v1-metaevidence")
       .select("uri")
       .eq("chainId", chainId)
+      .eq("arbitrable", arbitrable)
       .eq("metaEvidenceId", metaEvidenceId);
 
     if (data && data.length) throw new Error("Probably unauthorized access");
@@ -92,15 +92,11 @@ export const handler: Handler = async (ev) => {
         `No uri found for chain ${chainId} | metaEvidence ${metaEvidenceId} | arbitrable ${arbitrable} | endBlock ${endBlock}`
       );
 
-    console.log("~~~ inserting", {
-      chainId,
-      metaEvidenceId: String(metaEvidenceId),
-      uri,
-    });
-
     const { error } = await datalake
       .from("court-v1-metaevidence")
-      .insert([{ chainId, metaEvidenceId: String(metaEvidenceId), uri }]);
+      .insert([
+        { chainId, arbitrable, metaEvidenceId: String(metaEvidenceId), uri },
+      ]);
 
     if (error) throw new Error(`Datalake insertion error: ${error.message}`);
 
