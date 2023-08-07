@@ -6,6 +6,10 @@ import { sdk } from "../config/subgraph";
 import { validateChainId, validateNumber } from "../utils/validate";
 import { datalake } from "../config/supabase";
 
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const chainIds = [mainnet.id, gnosis.id, sepolia.id];
 
 export const getSubgraphData = async (
@@ -71,6 +75,7 @@ export const handler: Handler = async (ev) => {
     }
 
     return {
+      headers,
       statusCode: StatusCodes.OK,
       body: JSON.stringify({ metaEvidenceUri }),
     };

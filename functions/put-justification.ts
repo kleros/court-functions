@@ -15,6 +15,10 @@ import { validateChainId } from "../utils/validate";
 import { datalake } from "../config/supabase";
 import logtail from "../config/logtail";
 
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const chainIds = [mainnet.id, gnosis.id, sepolia.id];
 
 const chainName = {
@@ -99,6 +103,7 @@ export const handler: Handler = async (ev) => {
     logtail.info("Justification made", { disputeID, appeal });
 
     return {
+      headers,
       statusCode: StatusCodes.OK,
       body: JSON.stringify({ payload: { votes: payload.justification } }),
     };

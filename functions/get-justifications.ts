@@ -4,6 +4,10 @@ import { mainnet, gnosis, sepolia } from "viem/chains";
 import { validateChainId, validateNumber } from "../utils/validate";
 import { datalake } from "../config/supabase";
 
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+};
+
 const chainIds = [mainnet.id, gnosis.id, sepolia.id];
 
 const chainDBName = {
@@ -36,6 +40,7 @@ export const handler: Handler = async (ev) => {
       };
 
     return {
+      headers,
       statusCode: StatusCodes.OK,
       body: JSON.stringify({ payload: { justifications: data } }),
     };
