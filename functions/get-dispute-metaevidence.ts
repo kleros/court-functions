@@ -40,7 +40,7 @@ export const handler: Handler = async (ev) => {
         .from("court-v1-metaevidence")
         .select("response")
         .eq("chainId", chainId)
-        .eq("disputeId", disputeId);
+        .eq("metaEvidenceId", subgraphData.dispute.metaEvidenceId);
 
       if (error)
         return {

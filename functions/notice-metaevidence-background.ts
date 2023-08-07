@@ -20,14 +20,6 @@ export const getMetaEvidenceUriFromLogs = async (
   arbitrable: Address,
   toBlock: bigint
 ) => {
-  console.log("~~~ getting logs", {
-    chainId,
-    metaEvidenceId,
-    arbitrable,
-    toBlock,
-    startBlock: klerosStartBlock[chainId],
-  });
-
   logtail.info("🎉 New contract added, indexing... 🥃", {
     chainId,
     metaEvidenceId: String(metaEvidenceId),
@@ -80,13 +72,20 @@ export const handler: Handler = async (ev) => {
     const arbitrable = validateAddress(params.arbitrable, "arbitrable");
     const endBlock = validateBigInt(params.endBlock, "endBlock");
 
+    const { data } = await datalake
+      .from("court-v1-metaevidence")
+      .select("response")
+      .eq("chainId", chainId)
+      .eq("metaEvidenceId", metaEvidenceId);
+
+    if (data) throw new Error("Probably unauthorized access");
+
     const uri = await getMetaEvidenceUriFromLogs(
       chainId,
       metaEvidenceId,
       arbitrable,
       endBlock
     );
-    console.log("~~~ received getMetaEvidenceUriFromLogs", uri);
 
     if (!uri)
       throw new Error(
@@ -107,7 +106,7 @@ export const handler: Handler = async (ev) => {
     logtail.error("~ notice-metaevidence-bg ~ error occurred", {
       error: err.message,
     });
-    console.error("~~~ error", err.message);
+
     return {
       statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({ error: err.message }),
