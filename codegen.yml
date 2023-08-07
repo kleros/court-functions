@@ -1,0 +1,9 @@
+overwrite: true
+schema: "https://api.thegraph.com/subgraphs/name/andreimvp/kleros-display"
+documents: "graphql/**/*.gql"
+generates:
+  ./generated/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-graphql-request"

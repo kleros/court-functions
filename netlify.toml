@@ -1,0 +1,8 @@
+[functions]
+    directory = "functions"
+
+[[headers]]
+    for = "/*"
+        [headers.values]
+            Access-Control-Allow-Origin = "*"
+            Cache-Control = "public, s-maxage=1800"
