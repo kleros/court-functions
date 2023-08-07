@@ -9,6 +9,8 @@ import {
   validateChainId,
 } from "../utils/validate";
 import { StatusCodes } from "http-status-codes";
+import { datalake } from "../config/supabase";
+import logtail from "../config/logtail";
 
 const chainIds = [mainnet.id, gnosis.id];
 
@@ -40,18 +42,40 @@ export const handler: Handler = async (ev) => {
 
     const params = ev.queryStringParameters;
 
-    const metaEvidenceUri = await getMetaEvidenceUriFromLogs(
-      validateChainId(params.chainId, chainIds),
-      validateBigInt(params.metaEvidenceId, "metaEvidenceId"),
-      validateAddress(params.arbitrable, "arbitrable"),
-      validateBigInt(params.endBlock, "endBlock")
+    const chainId = validateChainId(params.chainId, chainIds);
+    const metaEvidenceId = validateBigInt(
+      params.metaEvidenceId,
+      "metaEvidenceId"
     );
+    const arbitrable = validateAddress(params.arbitrable, "arbitrable");
+    const endBlock = validateBigInt(params.endBlock, "endBlock");
+
+    const uri = await getMetaEvidenceUriFromLogs(
+      chainId,
+      metaEvidenceId,
+      arbitrable,
+      endBlock
+    );
+
+    if (!uri)
+      throw new Error(
+        `No uri found for chain ${chainId} | metaEvidence ${metaEvidenceId} | arbitrable ${arbitrable} | endBlock ${endBlock}`
+      );
+
+    const { error } = await datalake
+      .from("court-v1-metaevidence")
+      .insert([{ chainId, metaEvidenceId, uri }]);
+
+    if (error) throw new Error(`Datalake insertion error: ${error.message}`);
 
     return {
       statusCode: StatusCodes.OK,
-      body: JSON.stringify({ metaEvidenceUri }),
+      body: JSON.stringify({ metaEvidenceUri: uri }),
     };
   } catch (err: any) {
+    logtail.error("~ notice-metaevidence-bg ~ error occurred", {
+      error: err.message,
+    });
     return {
       statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({ error: err.message }),

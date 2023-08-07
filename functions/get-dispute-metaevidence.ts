@@ -48,7 +48,9 @@ export const handler: Handler = async (ev) => {
           body: JSON.stringify({ error: error.message }),
         };
 
-      if (!data || !data.length) {
+      if (data && data.length) {
+        metaEvidenceUri = data.at(0)!.response.metaEvidenceUri;
+      } else {
         const response = await fetch(process.env.NOTICE_METAEVIDENCE_URL, {
           method: "POST",
           body: JSON.stringify({ chainId, disputeId }),
@@ -61,8 +63,6 @@ export const handler: Handler = async (ev) => {
             await response.text()
           );
       }
-
-      // metaEvidenceUri = data // TODO
     }
 
     return {

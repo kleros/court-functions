@@ -14,8 +14,12 @@ import { gnosis, mainnet } from "viem/chains";
 import { publicClient } from "../config/client";
 import { klerosAddress } from "../config/contracts";
 import { validateChainId } from "../utils/validate";
+import { datalake } from "../config/supabase";
+import logtail from "../config/logtail";
 
 const chainIds = [mainnet.id, gnosis.id];
+
+const chainName = { [mainnet.id]: "mainnet", [gnosis.id]: "gnosischain" };
 
 interface RequestBody {
   payload: {
@@ -30,13 +34,6 @@ interface RequestBody {
   };
   signature: Address;
 }
-
-const logtail = new Logtail(process.env.LOGTAIL_SOURCE_TOKEN);
-
-const supabase = createClient(
-  process.env.DATALAKE_URL,
-  process.env.DATALAKE_KEY
-);
 
 const getKleros = (chainId: Supported<typeof chainIds>) =>
   getContract({
@@ -85,8 +82,8 @@ export const handler: Handler = async (ev) => {
         );
     }
 
-    const { error } = await supabase
-      .from(`${payload.network}-justifications`)
+    const { error } = await datalake
+      .from(`${chainName[payload.network]}-justifications`)
       .insert([
         {
           disputeIDAndAppeal: `${disputeID}-${appeal}`,
