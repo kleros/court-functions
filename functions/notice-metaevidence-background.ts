@@ -20,12 +20,24 @@ export const getMetaEvidenceUriFromLogs = async (
   arbitrable: Address,
   toBlock: bigint
 ) => {
-  console.log("~~~ received logs", {
+  console.log("~~~ getting logs", {
     chainId,
     metaEvidenceId,
     arbitrable,
     toBlock,
   });
+
+  const test = await publicClient[chainId].getLogs({
+    address: arbitrable,
+    event: parseAbiItem(
+      "event MetaEvidence(uint256 indexed _metaEvidenceID, string _evidence)"
+    ),
+    args: { _metaEvidenceID: metaEvidenceId },
+    fromBlock: 29118450n,
+    toBlock,
+  });
+
+  console.log("~~~ getting logs", { test });
 
   const logs = await publicClient[chainId].getLogs({
     address: arbitrable,
