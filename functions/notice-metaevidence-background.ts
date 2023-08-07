@@ -37,7 +37,7 @@ export const getMetaEvidenceUriFromLogs = async (
     toBlock,
   });
 
-  console.log("~~~ getting logs", { test });
+  console.log("~~~ getting logs", { test: test.at(-1)?.args });
 
   const logs = await publicClient[chainId].getLogs({
     address: arbitrable,
@@ -100,9 +100,12 @@ export const handler: Handler = async (ev) => {
     logtail.error("~ notice-metaevidence-bg ~ error occurred", {
       error: err.message,
     });
+    console.error("~~~ error", err.message);
     return {
       statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({ error: err.message }),
     };
+  } finally {
+    await logtail.flush();
   }
 };
