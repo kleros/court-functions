@@ -1,14 +1,15 @@
 import { Handler } from "@netlify/functions";
 import { StatusCodes } from "http-status-codes";
-import { mainnet, gnosis } from "viem/chains";
+import { mainnet, gnosis, sepolia } from "viem/chains";
 import { validateChainId, validateNumber } from "../utils/validate";
 import { datalake } from "../config/supabase";
 
-const chainIds = [mainnet.id, gnosis.id];
+const chainIds = [mainnet.id, gnosis.id, sepolia.id];
 
 const chainDBName = {
   [mainnet.id]: "mainnet",
   [gnosis.id]: "gnosischain",
+  [sepolia.id]: "sepolia",
 };
 
 export const handler: Handler = async (ev) => {

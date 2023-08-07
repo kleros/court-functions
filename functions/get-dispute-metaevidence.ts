@@ -1,12 +1,12 @@
 import { Handler } from "@netlify/functions";
 import { StatusCodes } from "http-status-codes";
-import { gnosis, mainnet } from "viem/chains";
+import { gnosis, mainnet, sepolia } from "viem/chains";
 import { Sdk } from "../generated/graphql";
 import { sdk } from "../config/subgraph";
 import { validateChainId, validateNumber } from "../utils/validate";
 import { datalake } from "../config/supabase";
 
-const chainIds = [mainnet.id, gnosis.id];
+const chainIds = [mainnet.id, gnosis.id, sepolia.id];
 
 export const getSubgraphData = async (
   chainId: Supported<typeof chainIds>,
@@ -51,11 +51,15 @@ export const handler: Handler = async (ev) => {
       if (data && data.length) {
         metaEvidenceUri = data.at(0)!.response.metaEvidenceUri;
       } else {
-        const response = await fetch(process.env.URL + '/.netlify/functions/notice-metaevidence-background', {
-          method: "POST",
-          body: JSON.stringify({ chainId, disputeId }),
-          headers: { "Content-Type": "application/json" },
-        });
+        const response = await fetch(
+          process.env.URL +
+            "/.netlify/functions/notice-metaevidence-background",
+          {
+            method: "POST",
+            body: JSON.stringify({ chainId, disputeId }),
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
         if (!response.ok)
           console.error(

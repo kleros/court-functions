@@ -10,16 +10,20 @@ import {
   recoverAddress,
   toHex,
 } from "viem";
-import { gnosis, mainnet } from "viem/chains";
+import { gnosis, mainnet, sepolia } from "viem/chains";
 import { publicClient } from "../config/client";
 import { klerosAddress } from "../config/contracts";
 import { validateChainId } from "../utils/validate";
 import { datalake } from "../config/supabase";
 import logtail from "../config/logtail";
 
-const chainIds = [mainnet.id, gnosis.id];
+const chainIds = [mainnet.id, gnosis.id, sepolia.id];
 
-const chainName = { [mainnet.id]: "mainnet", [gnosis.id]: "gnosischain" };
+const chainName = {
+  [mainnet.id]: "mainnet",
+  [gnosis.id]: "gnosischain",
+  [sepolia.id]: "sepolia",
+};
 
 interface RequestBody {
   payload: {
