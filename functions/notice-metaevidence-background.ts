@@ -28,18 +28,6 @@ export const getMetaEvidenceUriFromLogs = async (
     startBlock: klerosStartBlock[chainId],
   });
 
-  const test = await publicClient[chainId].getLogs({
-    address: arbitrable,
-    event: parseAbiItem(
-      "event MetaEvidence(uint256 indexed _metaEvidenceID, string _evidence)"
-    ),
-    args: { _metaEvidenceID: metaEvidenceId },
-    fromBlock: 29118450n,
-    toBlock,
-  });
-
-  console.log("~~~ getting logs", { test: test.at(-1)?.args });
-
   logtail.info("🎉 New contract added, indexing... 🥃", {
     chainId,
     metaEvidenceId: String(metaEvidenceId),
@@ -47,7 +35,7 @@ export const getMetaEvidenceUriFromLogs = async (
   });
   const batchSize = 50_000n;
   const startBlock = klerosStartBlock[chainId];
-  const nbBatches = (toBlock - startBlock) / batchSize;
+  const nbBatches = Number((toBlock - startBlock) / batchSize);
   const batches = await Promise.all(
     [...Array(nbBatches).keys()].map((idx) => {
       const fromBlock = startBlock + batchSize * BigInt(idx);
