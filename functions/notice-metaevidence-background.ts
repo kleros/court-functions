@@ -33,34 +33,35 @@ export const getMetaEvidenceUriFromLogs = async (
     metaEvidenceId: String(metaEvidenceId),
     arbitrable,
   });
+
   const batchSize = 50_000n;
   const startBlock = klerosStartBlock[chainId];
-  const nbBatches = Number((toBlock - startBlock) / batchSize);
-  const batches = await Promise.all(
-    [...Array(nbBatches).keys()].map((idx) => {
-      const fromBlock = startBlock + batchSize * BigInt(idx);
-      console.log({
-        fromBlock,
-        toBlock:
-          fromBlock + batchSize > toBlock ? toBlock : fromBlock + batchSize,
-      });
-      return publicClient[chainId].getLogs({
-        address: arbitrable,
-        event: parseAbiItem(
-          "event MetaEvidence(uint256 indexed _metaEvidenceID, string _evidence)"
-        ),
-        args: { _metaEvidenceID: metaEvidenceId },
-        fromBlock,
-        toBlock:
-          fromBlock + batchSize > toBlock ? toBlock : fromBlock + batchSize,
-      });
-    })
-  );
-
-  console.log(batches);
-  console.log(batches.find((logs) => logs.length));
-
-  return batches.find((logs) => logs.length)?.at(0)?.args._evidence;
+  return (
+    await Promise.all(
+      [...Array(Number((toBlock - startBlock) / batchSize)).keys()].map(
+        (idx) => {
+          const fromBlock = startBlock + batchSize * BigInt(idx);
+          console.log({
+            fromBlock,
+            toBlock:
+              fromBlock + batchSize > toBlock ? toBlock : fromBlock + batchSize,
+          });
+          return publicClient[chainId].getLogs({
+            address: arbitrable,
+            event: parseAbiItem(
+              "event MetaEvidence(uint256 indexed _metaEvidenceID, string _evidence)"
+            ),
+            args: { _metaEvidenceID: metaEvidenceId },
+            fromBlock,
+            toBlock:
+              fromBlock + batchSize > toBlock ? toBlock : fromBlock + batchSize,
+          });
+        }
+      )
+    )
+  )
+    .find((logs) => logs.length)
+    ?.at(0)?.args._evidence;
 };
 
 export const handler: Handler = async (ev) => {
@@ -79,7 +80,6 @@ export const handler: Handler = async (ev) => {
     const arbitrable = validateAddress(params.arbitrable, "arbitrable");
     const endBlock = validateBigInt(params.endBlock, "endBlock");
 
-    console.log("~~~ calling getMetaEvidenceUriFromLogs");
     const uri = await getMetaEvidenceUriFromLogs(
       chainId,
       metaEvidenceId,
@@ -95,7 +95,7 @@ export const handler: Handler = async (ev) => {
 
     const { error } = await datalake
       .from("court-v1-metaevidence")
-      .insert([{ chainId, metaEvidenceId, uri }]);
+      .insert([{ chainId, metaEvidenceId: String(metaEvidenceId), uri }]);
 
     if (error) throw new Error(`Datalake insertion error: ${error.message}`);
 
