@@ -51,7 +51,8 @@ export const handler: Handler = async (ev) => {
       if (data && data.length) {
         metaEvidenceUri = data.at(0)!.response.metaEvidenceUri;
       } else {
-        const response = await fetch(process.env.NOTICE_METAEVIDENCE_URL, {
+        
+        const response = await fetch(process.env.URL + '/.netlify/functions/notice-metaevidence-background', {
           method: "POST",
           body: JSON.stringify({ chainId, disputeId }),
           headers: { "Content-Type": "application/json" },
