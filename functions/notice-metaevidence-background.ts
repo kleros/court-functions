@@ -74,7 +74,7 @@ export const handler: Handler = async (ev) => {
 
     const { data } = await datalake
       .from("court-v1-metaevidence")
-      .select("response")
+      .select("uri")
       .eq("chainId", chainId)
       .eq("metaEvidenceId", metaEvidenceId);
 

@@ -38,7 +38,7 @@ export const handler: Handler = async (ev) => {
     if (!metaEvidenceUri) {
       const { data, error } = await datalake
         .from("court-v1-metaevidence")
-        .select("response")
+        .select("uri")
         .eq("chainId", chainId)
         .eq("metaEvidenceId", subgraphData.dispute.metaEvidenceId);
 
@@ -49,33 +49,23 @@ export const handler: Handler = async (ev) => {
         };
 
       if (data && data.length) {
-        metaEvidenceUri = data.at(0)!.response.metaEvidenceUri;
+        metaEvidenceUri = data[0].uri;
       } else {
-        const { data, error } = await datalake
-          .from("court-v1-metaevidence")
-          .select("*")
-          .eq("chainId", `${chainId}`)
-          .eq("metaEvidenceId", `${subgraphData.dispute.metaEvidenceId}`);
+        const response = await fetch(
+          process.env.URL +
+            "/.netlify/functions/notice-metaevidence-background" +
+            `?chainId=${chainId}` +
+            `&metaEvidenceId=${subgraphData.dispute.metaEvidenceId}` +
+            `&arbitrable=${subgraphData.dispute.arbitrated.id}` +
+            `&endBlock=${subgraphData.dispute.createdAtBlock}`,
+          { method: "POST" }
+        );
 
-        if (data && data.length) {
-          metaEvidenceUri = data[0].uri;
-        } else {
-          const response = await fetch(
-            process.env.URL +
-              "/.netlify/functions/notice-metaevidence-background" +
-              `?chainId=${chainId}` +
-              `&metaEvidenceId=${subgraphData.dispute.metaEvidenceId}` +
-              `&arbitrable=${subgraphData.dispute.arbitrated.id}` +
-              `&endBlock=${subgraphData.dispute.createdAtBlock}`,
-            { method: "POST" }
+        if (!response.ok)
+          console.error(
+            "Failed to invoke background function: ",
+            await response.text()
           );
-
-          if (!response.ok)
-            console.error(
-              "Failed to invoke background function: ",
-              await response.text()
-            );
-        }
       }
     }
 
