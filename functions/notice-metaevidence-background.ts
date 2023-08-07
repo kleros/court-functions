@@ -78,7 +78,7 @@ export const handler: Handler = async (ev) => {
       .eq("chainId", chainId)
       .eq("metaEvidenceId", metaEvidenceId);
 
-    if (data) throw new Error("Probably unauthorized access");
+    if (data && data.length) throw new Error("Probably unauthorized access");
 
     const uri = await getMetaEvidenceUriFromLogs(
       chainId,
