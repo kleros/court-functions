@@ -92,6 +92,12 @@ export const handler: Handler = async (ev) => {
         `No uri found for chain ${chainId} | metaEvidence ${metaEvidenceId} | arbitrable ${arbitrable} | endBlock ${endBlock}`
       );
 
+    console.log("~~~ inserting", {
+      chainId,
+      metaEvidenceId: String(metaEvidenceId),
+      uri,
+    });
+
     const { error } = await datalake
       .from("court-v1-metaevidence")
       .insert([{ chainId, metaEvidenceId: String(metaEvidenceId), uri }]);
