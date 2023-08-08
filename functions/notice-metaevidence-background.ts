@@ -20,7 +20,7 @@ export const getMetaEvidenceUriFromLogs = async (
   arbitrable: Address,
   toBlock: bigint
 ) => {
-  logtail.info("🎉 New contract added, indexing... 🥃", {
+  logtail.info("Starting Meta Evidence lookup... 🔎 ['Click to see arbitrable details']", {
     chainId,
     metaEvidenceId: String(metaEvidenceId),
     arbitrable,
@@ -105,7 +105,7 @@ export const handler: Handler = async (ev) => {
       body: JSON.stringify({ metaEvidenceUri: uri }),
     };
   } catch (err: any) {
-    logtail.error("~ notice-metaevidence-bg ~ error occurred", {
+    logtail.error("Unexpected error occured; see message below., {
       error: err.message,
     });
 
