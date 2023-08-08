@@ -5,6 +5,8 @@ import { Sdk } from "../generated/graphql";
 import { sdk } from "../config/subgraph";
 import { validateChainId, validateNumber } from "../utils/validate";
 import { datalake } from "../config/supabase";
+import logtail from "../config/logtail";
+
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -67,10 +69,11 @@ export const handler: Handler = async (ev) => {
         );
 
         if (!response.ok)
-          console.error(
+          logtail.error(
             "Failed to invoke background function: ",
             await response.text()
           );
+          logtail.flush()
       }
     }
 
