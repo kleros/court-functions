@@ -105,7 +105,7 @@ export const handler: Handler = async (ev) => {
       body: JSON.stringify({ metaEvidenceUri: uri }),
     };
   } catch (err: any) {
-    logtail.error("Unexpected error occured; see message below., {
+    logtail.error("Unexpected error occured; see message below.", {
       error: err.message,
     });
 
