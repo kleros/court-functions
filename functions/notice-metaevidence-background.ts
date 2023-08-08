@@ -97,7 +97,7 @@ export const handler: Handler = async (ev) => {
       .insert([
         { chainId, arbitrable, metaEvidenceId: String(metaEvidenceId), uri },
       ]);
-
+    logtail.info(`Insertion for ${arbitrable} with MetaEvidence: ${uri}`)
     if (error) throw new Error(`Datalake insertion error: ${error.message}`);
 
     return {
