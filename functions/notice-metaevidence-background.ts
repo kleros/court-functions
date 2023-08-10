@@ -30,7 +30,7 @@ export const getMetaEvidenceUriFromLogs = async (
   const startBlock = klerosStartBlock[chainId];
   return (
     await Promise.all(
-      [...Array(Number((toBlock - startBlock) / batchSize)).keys()].map(
+      [...Array(Number((toBlock - startBlock) / batchSize) + 1).keys()].map(
         (idx) => {
           const fromBlock = startBlock + batchSize * BigInt(idx);
           console.log({
