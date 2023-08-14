@@ -52,8 +52,10 @@ const getKleros = (chainId: Supported<typeof chainIds>) =>
 
 export const handler: Handler = async (ev) => {
   try {
-    if (ev.httpMethod !== "PUT")
-      throw new Error("Invalid request method, expected PUT");
+    if (ev.httpMethod !== "POST")
+      throw new Error(
+        `Invalid request method, expected POST, got ${ev.httpMethod}`
+      );
     if (!ev.body) throw new Error("No body provided");
 
     const { payload, signature } = JSON.parse(ev.body) as RequestBody;
@@ -111,6 +113,7 @@ export const handler: Handler = async (ev) => {
     logtail.error("Error occurred", { error: err.message });
 
     return {
+      headers,
       statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({ error: err.message }),
     };
