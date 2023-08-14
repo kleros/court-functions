@@ -7,7 +7,6 @@ import { validateChainId, validateNumber } from "../utils/validate";
 import { datalake } from "../config/supabase";
 import logtail from "../config/logtail";
 
-
 const headers = {
   "Access-Control-Allow-Origin": "*",
 };
@@ -69,11 +68,9 @@ export const handler: Handler = async (ev) => {
         );
 
         if (!response.ok)
-          logtail.error(
-            "Failed to invoke background function: ",
-            await response.text()
-          );
-          logtail.flush()
+          logtail.error("Failed to invoke background function: ", {
+            error: await response.text(),
+          });
       }
     }
 
@@ -87,5 +84,7 @@ export const handler: Handler = async (ev) => {
       statusCode: StatusCodes.BAD_REQUEST,
       body: JSON.stringify({ error: err.message }),
     };
+  } finally {
+    logtail.flush();
   }
 };
