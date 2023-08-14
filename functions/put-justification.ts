@@ -12,6 +12,8 @@ import { gnosis, mainnet, sepolia } from "viem/chains";
 import { publicClient } from "../config/client";
 import { klerosAddress } from "../config/contracts";
 import { validateChainId } from "../utils/validate";
+import { dynamoDB } from "../config/dynamoDB";
+import { GetItemCommand } from "@aws-sdk/client-dynamodb";
 import { datalake } from "../config/supabase";
 import logtail from "../config/logtail";
 
@@ -29,8 +31,9 @@ const chainName = {
 
 interface RequestBody {
   payload: {
-    network: Supported<typeof chainIds>;
+    chainId: Supported<typeof chainIds>;
     address: Address;
+    signature: Address;
     justification: {
       disputeID: number;
       appeal: number;
@@ -38,7 +41,6 @@ interface RequestBody {
       justification: string;
     };
   };
-  signature: Address;
 }
 
 const getKleros = (chainId: Supported<typeof chainIds>) =>
@@ -61,40 +63,53 @@ export const handler: Handler = async (ev) => {
       );
     if (!ev.body) throw new Error("No body provided");
 
-    const { payload, signature } = JSON.parse(ev.body) as RequestBody;
+    const { payload } = JSON.parse(ev.body) as RequestBody;
 
     const {
-      network: chainIdParam,
+      chainId: chainIdParam,
+      address,
+      signature,
       justification: { disputeID, appeal, voteIDs, justification },
     } = payload;
 
     const chainId = validateChainId(String(chainIdParam), chainIds);
 
     const sender = await recoverAddress({
-      hash: keccak256(toHex(JSON.stringify(payload))),
+      hash: keccak256(
+        toHex(JSON.stringify({ disputeID, appeal, voteIDs, justification }))
+      ),
       signature,
     });
-    if (sender !== payload.address)
+    const derived = (
+      await dynamoDB.send(
+        new GetItemCommand({
+          TableName: "user-settings",
+          Key: { address: { S: address } },
+          ProjectionExpression: "derivedAccountAddress",
+        })
+      )
+    ).Item?.derivedAccountAddress.S;
+    if (sender !== derived)
       throw new Error(
-        `The sender address does not match the address in the payload`
+        "The sender address does not match the address in the payload"
       );
 
     const kleros = getKleros(chainId);
     for (const voteId of voteIDs) {
-      const [account, , , voted] = await kleros.read.getVote([
+      const [voter, , , voted] = await kleros.read.getVote([
         BigInt(disputeID),
         BigInt(appeal),
         BigInt(voteId),
       ]);
 
-      if (account !== payload.address || voted)
+      if (voter !== address || voted)
         throw new Error(
           "Not all of the supplied vote IDs belong to the supplied address and are not cast."
         );
     }
 
     const { error } = await datalake
-      .from(`${chainName[payload.network]}-justifications`)
+      .from(`${chainName[chainId]}-justifications`)
       .insert([
         {
           disputeIDAndAppeal: `${disputeID}-${appeal}`,
@@ -110,7 +125,7 @@ export const handler: Handler = async (ev) => {
     return {
       headers,
       statusCode: StatusCodes.OK,
-      body: JSON.stringify({ payload: { votes: payload.justification } }),
+      body: JSON.stringify({ payload: payload.justification }),
     };
   } catch (err: any) {
     logtail.error("Error occurred", { error: err.message });
