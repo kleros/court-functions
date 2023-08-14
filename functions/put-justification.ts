@@ -52,6 +52,9 @@ const getKleros = (chainId: Supported<typeof chainIds>) =>
 
 export const handler: Handler = async (ev) => {
   try {
+    if (ev.httpMethod === "OPTIONS")
+      return { statusCode: StatusCodes.NO_CONTENT };
+
     if (ev.httpMethod !== "POST")
       throw new Error(
         `Invalid request method, expected POST, got ${ev.httpMethod}`
