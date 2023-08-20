@@ -1,13 +1,6 @@
 import { Handler } from "@netlify/functions";
 import { StatusCodes } from "http-status-codes";
-import {
-  Address,
-  getContract,
-  keccak256,
-  parseAbi,
-  recoverAddress,
-  toHex,
-} from "viem";
+import { Address, getContract, parseAbi, recoverMessageAddress } from "viem";
 import { gnosis, mainnet, sepolia } from "viem/chains";
 import { publicClient } from "../config/client";
 import { klerosAddress } from "../config/contracts";
@@ -16,7 +9,9 @@ import { datalake } from "../config/supabase";
 import logtail from "../config/logtail";
 
 const headers = {
-  "Access-Control-Allow-Origin": process.env.COURT_INSTANCE_URL,
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 const chainIds = [mainnet.id, gnosis.id, sepolia.id];
@@ -30,8 +25,9 @@ const chainName = {
 interface RequestBody {
   chainId: Supported<typeof chainIds>;
   account: Address;
-  derived?: Address;
   signature: Address;
+  derived?: Address;
+  derivedSignature?: Address;
   justification: {
     disputeID: number;
     appeal: number;
@@ -52,7 +48,7 @@ const getKleros = (chainId: Supported<typeof chainIds>) =>
 export const handler: Handler = async (ev) => {
   try {
     if (ev.httpMethod === "OPTIONS")
-      return { statusCode: StatusCodes.NO_CONTENT };
+      return { headers, statusCode: StatusCodes.NO_CONTENT };
 
     if (ev.httpMethod !== "POST")
       throw new Error(
@@ -63,21 +59,50 @@ export const handler: Handler = async (ev) => {
     const {
       chainId: chainIdParam,
       account,
-      derived,
       signature,
-      justification: { disputeID, appeal, voteIDs, justification },
+      derived,
+      derivedSignature,
+      justification,
     } = JSON.parse(ev.body) as RequestBody;
+
+    const { appeal, disputeID, voteIDs } = justification;
 
     const chainId = validateChainId(String(chainIdParam), chainIds);
 
-    const recovered = await recoverAddress({
-      hash: keccak256(
-        toHex(JSON.stringify({ disputeID, appeal, voteIDs, justification }))
-      ),
+    if (derived && derivedSignature) {
+      const recovered = await recoverMessageAddress({
+        message: `Sign this to confirm derived account address ${derived}. This will be used to provide justifications.`,
+        signature: derivedSignature,
+      });
+
+      console.log(
+        { recovered, account },
+        `Sign this to confirm derived account address ${derived}. This will be used to provide justifications.`
+      );
+
+      if (recovered !== account) throw new Error("Invalid signature");
+
+      const { error } = await datalake
+        .from("derived-accounts")
+        .upsert([{ account, derived }])
+        .select();
+
+      if (error) throw new Error(error.message);
+    }
+
+    const recovered = await recoverMessageAddress({
+      message: JSON.stringify(justification),
       signature,
     });
 
-    if (recovered !== account || recovered !== derived)
+    const { data: storedDerivedData } = await datalake
+      .from("derived-accounts")
+      .select("derived")
+      .eq("account", account);
+
+    const storedDerived = storedDerivedData?.[0].derived;
+
+    if (recovered !== account && recovered !== storedDerived)
       throw new Error(
         "The sender address does not match the address in the payload"
       );
@@ -98,7 +123,7 @@ export const handler: Handler = async (ev) => {
 
     const { error } = await datalake
       .from(`${chainName[chainId]}-justifications`)
-      .insert([
+      .upsert([
         {
           disputeIDAndAppeal: `${disputeID}-${appeal}`,
           voteID: String(voteIDs[voteIDs.length - 1]),
@@ -113,7 +138,7 @@ export const handler: Handler = async (ev) => {
     return {
       headers,
       statusCode: StatusCodes.OK,
-      body: JSON.stringify({ disputeID, appeal, voteIDs, justification }),
+      body: JSON.stringify(justification),
     };
   } catch (err: any) {
     logtail.error("Error occurred", { error: err.message });
