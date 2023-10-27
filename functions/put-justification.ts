@@ -127,7 +127,7 @@ export const handler: Handler = async (ev) => {
         {
           disputeIDAndAppeal: `${disputeID}-${appeal}`,
           voteID: String(voteIDs[voteIDs.length - 1]),
-          justification,
+          justification: justification.justification,
         },
       ]);
 
