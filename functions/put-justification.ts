@@ -62,10 +62,10 @@ export const handler: Handler = async (ev) => {
       signature,
       derived,
       derivedSignature,
-      justification,
+      justification: justificationObject,
     } = JSON.parse(ev.body) as RequestBody;
 
-    const { appeal, disputeID, voteIDs } = justification;
+    const { appeal, disputeID, voteIDs, justification } = justificationObject;
 
     const chainId = validateChainId(String(chainIdParam), chainIds);
 
@@ -91,7 +91,7 @@ export const handler: Handler = async (ev) => {
     }
 
     const recovered = await recoverMessageAddress({
-      message: JSON.stringify(justification),
+      message: JSON.stringify(justificationObject),
       signature,
     });
 
@@ -125,6 +125,7 @@ export const handler: Handler = async (ev) => {
       .from(`${chainName[chainId]}-justifications`)
       .upsert([
         {
+          id: `${disputeID}-${appeal}-${account}-${voteIDs.toString.toString()}`,
           disputeIDAndAppeal: `${disputeID}-${appeal}`,
           voteID: String(voteIDs[voteIDs.length - 1]),
           justification,
@@ -138,7 +139,7 @@ export const handler: Handler = async (ev) => {
     return {
       headers,
       statusCode: StatusCodes.OK,
-      body: JSON.stringify(justification),
+      body: JSON.stringify(justificationObject),
     };
   } catch (err: any) {
     logtail.error("Error occurred", { error: err.message });
