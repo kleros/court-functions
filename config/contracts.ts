@@ -1,7 +1,7 @@
 import { gnosis, mainnet, sepolia } from "viem/chains";
 
 export const klerosAddress = {
-  [mainnet.id]: "0x9c1da9a04925bdfdedf0f6421bc7eea8305f9002",
+  [mainnet.id]: "0x988b3A538b618C7A603e1c11Ab82Cd16dbE28069",
   [gnosis.id]: "0x9c1da9a04925bdfdedf0f6421bc7eea8305f9002",
   [sepolia.id]: "0x90992fb4E15ce0C59aEFfb376460Fda4Ee19C879",
 } as const;
