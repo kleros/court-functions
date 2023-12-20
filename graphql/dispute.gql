@@ -2,9 +2,7 @@ query Dispute($id: ID!) {
   dispute(id: $id) {
     metaEvidenceId
     createdAtBlock
-    arbitrated {
-      id
-    }
+    arbitrated
     arbitrableHistory {
       metaEvidence
     }
