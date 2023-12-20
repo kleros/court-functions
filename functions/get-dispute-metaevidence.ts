@@ -45,7 +45,7 @@ export const handler: Handler = async (ev) => {
         .from("court-v1-metaevidence")
         .select("uri")
         .eq("chainId", chainId)
-        .eq("arbitrable", subgraphData.dispute.arbitrated.id)
+        .eq("arbitrable", subgraphData.dispute.arbitrated)
         .eq("metaEvidenceId", subgraphData.dispute.metaEvidenceId);
 
       if (error)
@@ -62,7 +62,7 @@ export const handler: Handler = async (ev) => {
             "/.netlify/functions/notice-metaevidence-background" +
             `?chainId=${chainId}` +
             `&metaEvidenceId=${subgraphData.dispute.metaEvidenceId}` +
-            `&arbitrable=${subgraphData.dispute.arbitrated.id}` +
+            `&arbitrable=${subgraphData.dispute.arbitrated}` +
             `&endBlock=${subgraphData.dispute.createdAtBlock}`,
           { method: "POST" }
         );

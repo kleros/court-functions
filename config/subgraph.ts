@@ -4,11 +4,11 @@ import { Sdk, getSdk } from "../generated/graphql";
 
 const subgraphUrl = {
   [mainnet.id]:
-    "https://api.thegraph.com/subgraphs/name/andreimvp/kleros-display-mainnet",
+    "https://api.thegraph.com/subgraphs/name/kleros/kleros-display-mainnet",
   [gnosis.id]:
-    "https://api.thegraph.com/subgraphs/name/andreimvp/kleros-display",
+    "https://api.thegraph.com/subgraphs/name/kleros/kleros-display-gnosis",
   [sepolia.id]:
-    "https://api.studio.thegraph.com/query/50849/kleros-sepolia-ss/version/latest",
+    "https://api.studio.thegraph.com/query/50849/kleros-sepolia-gf/version/latest",
 } as const;
 
 export const sdk = Object.entries(subgraphUrl).reduce(
