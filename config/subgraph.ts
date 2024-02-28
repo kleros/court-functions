@@ -8,7 +8,7 @@ const subgraphUrl = {
   [gnosis.id]:
     "https://api.thegraph.com/subgraphs/name/kleros/kleros-display-gnosis",
   [sepolia.id]:
-    "https://api.studio.thegraph.com/query/50849/kleros-sepolia-gf/version/latest",
+    "https://api.thegraph.com/subgraphs/name/kleros/kleros-display-sepolia",
 } as const;
 
 export const sdk = Object.entries(subgraphUrl).reduce(
