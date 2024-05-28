@@ -21,3 +21,7 @@
 
 - fetches the metaevidence uri via `getLogs` and introduces it into the database
     - uses multiple batches for faster concurrent fetching
+
+### `upload-to-ipfs`
+- uploads a files to ipfs and returns the cids.
+- returned cid has the scheme : `ipfs://cid`
