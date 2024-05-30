@@ -7,6 +7,7 @@
     "gql": "graphql-codegen --config codegen.yml"
   },
   "devDependencies": {
+    "@filebase/client": "^0.0.5",
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/introspection": "^4.0.0",
     "@graphql-codegen/typescript": "^4.0.1",
@@ -15,6 +16,8 @@
     "@logtail/node": "^0.4.5",
     "@netlify/functions": "^1.6.0",
     "@supabase/supabase-js": "^2.31.0",
+    "amqplib": "^0.10.4",
+    "busboy": "^1.6.0",
     "graphql": "^16.7.1",
     "graphql-request": "^6.1.0",
     "http-status-codes": "^2.2.0",
