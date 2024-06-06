@@ -15,6 +15,13 @@ export const publishToGraph = async (fileName, data) => {
     method: "POST",
     body: payload,
   });
+
+  if (!response.ok) {
+    throw new Error(
+      `HTTP error! status: ${response.status}, Failed to pin to graph`
+    );
+  }
+
   const result = parseNewlineSeparatedJSON(await response.text());
 
   return result.map(({ Name, Hash }) => ({
