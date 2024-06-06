@@ -2,6 +2,7 @@ import { File, FilebaseClient } from "@filebase/client";
 import { Handler, HandlerEvent } from "@netlify/functions";
 import amqp, { Connection } from "amqplib";
 import busboy from "busboy";
+import { areCidsConsistent, publishToGraph } from "../utils/publishToGraph";
 
 const { FILEBASE_TOKEN, RABBITMQ_URL } = process.env;
 const filebase = new FilebaseClient({ token: FILEBASE_TOKEN ?? "" });
@@ -54,11 +55,20 @@ const parseMultipart = ({
     bb.end();
   });
 
-const pinToFilebase = async (
+const pinFiles = async (
   data: FormData,
-  operation: string
-): Promise<Array<string>> => {
+  operation: string,
+  pinToGraph: boolean
+): Promise<
+  [Array<string>, Array<{ filebaseCid: string; graphCid: string }>]
+> => {
   const cids = new Array<string>();
+  // keep track in case some cids are inconsistent
+  const inconsistentCids = new Array<{
+    filebaseCid: string;
+    graphCid: string;
+  }>();
+
   for (const [_, dataElement] of Object.entries(data)) {
     if (dataElement.isFile) {
       const { filename, mimeType, content } = dataElement;
@@ -66,29 +76,48 @@ const pinToFilebase = async (
       const cid = await filebase.storeDirectory([
         new File([content], path, { type: mimeType }),
       ]);
+
+      if (pinToGraph) {
+        const graphResult = await publishToGraph(filename, content);
+        if (!areCidsConsistent(cid, graphResult)) {
+          console.warn("Inconsistent cids from Filebase and Graph Node :", {
+            filebaseCid: cid,
+            graphCid: graphResult[1].hash,
+          });
+          inconsistentCids.push({
+            filebaseCid: cid,
+            graphCid: graphResult[1].hash,
+          });
+        }
+      }
+
       await emitRabbitMQLog(cid, operation);
-      cids.push(`ipfs://${cid}/${path}`);
+      cids.push(`/ipfs/${cid}/${path}`);
     }
   }
 
-  return cids;
+  return [cids, inconsistentCids];
 };
 
 export const handler: Handler = async (event) => {
   const { queryStringParameters } = event;
 
-  if (!queryStringParameters || !queryStringParameters.operation) {
+  if (!queryStringParameters?.operation) {
     return {
       statusCode: 400,
       body: JSON.stringify({ message: "Invalid query parameters" }),
     };
   }
 
-  const { operation } = queryStringParameters;
+  const { operation, pinToGraph } = queryStringParameters;
 
   try {
     const parsed = await parseMultipart(event);
-    const cids = await pinToFilebase(parsed, operation);
+    const [cids, inconsistentCids] = await pinFiles(
+      parsed,
+      operation,
+      pinToGraph === "true"
+    );
 
     return {
       statusCode: 200,
@@ -99,6 +128,7 @@ export const handler: Handler = async (event) => {
       body: JSON.stringify({
         message: "File has been stored successfully",
         cids,
+        inconsistentCids,
       }),
     };
   } catch (err) {
