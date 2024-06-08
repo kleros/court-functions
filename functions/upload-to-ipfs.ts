@@ -100,6 +100,17 @@ const pinFiles = async (
 };
 
 export const handler: Handler = async (event) => {
+  // for preflight requests
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST",
+      },
+    };
+  }
+
   const { queryStringParameters } = event;
 
   if (!queryStringParameters?.operation) {

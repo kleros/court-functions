@@ -24,4 +24,4 @@
 
 ### `upload-to-ipfs`
 - uploads a files to ipfs and returns the cids.
-- returned cid has the scheme : `ipfs://cid`
+- returned cid has the scheme : `/ipfs/cid`
