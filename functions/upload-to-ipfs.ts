@@ -107,14 +107,14 @@ const headers = {
 
 export const handler: Handler = async (event) => {
   // for preflight requests
-  if (event.httpMethod === "OPTIONS")
-    return { headers, statusCode: StatusCodes.NO_CONTENT };
-
-  if (event.httpMethod !== "POST")
-    return {
-      statusCode: StatusCodes.METHOD_NOT_ALLOWED,
-      headers,
-    };
+  switch (event.httpMethod) {
+    case "OPTIONS":
+      return { headers, statusCode: StatusCodes.NO_CONTENT };
+    case "POST":
+      break;
+    default:
+      return { statusCode: StatusCodes.METHOD_NOT_ALLOWED, headers };
+  }
 
   const { queryStringParameters } = event;
 
@@ -149,7 +149,7 @@ export const handler: Handler = async (event) => {
     console.log("Error occured : ", { err: err.message });
 
     return {
-      statusCode: StatusCodes.BAD_REQUEST,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
       headers,
       body: JSON.stringify({ message: err.message }),
     };
