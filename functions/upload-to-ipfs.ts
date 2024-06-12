@@ -3,6 +3,7 @@ import { Handler, HandlerEvent } from "@netlify/functions";
 import amqp, { Connection } from "amqplib";
 import busboy from "busboy";
 import { areCidsConsistent, publishToGraph } from "../utils/publishToGraph";
+import { StatusCodes } from "http-status-codes";
 
 const { FILEBASE_TOKEN, RABBITMQ_URL } = process.env;
 const filebase = new FilebaseClient({ token: FILEBASE_TOKEN ?? "" });
@@ -99,23 +100,29 @@ const pinFiles = async (
   return [cids, inconsistentCids];
 };
 
+const headers = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export const handler: Handler = async (event) => {
   // for preflight requests
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST",
-      },
-    };
+  switch (event.httpMethod) {
+    case "OPTIONS":
+      return { headers, statusCode: StatusCodes.NO_CONTENT };
+    case "POST":
+      break;
+    default:
+      return { statusCode: StatusCodes.METHOD_NOT_ALLOWED, headers };
   }
 
   const { queryStringParameters } = event;
 
   if (!queryStringParameters?.operation) {
     return {
-      statusCode: 400,
+      statusCode: StatusCodes.BAD_REQUEST,
+      headers,
       body: JSON.stringify({ message: "Invalid query parameters" }),
     };
   }
@@ -131,20 +138,20 @@ export const handler: Handler = async (event) => {
     );
 
     return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST",
-      },
+      statusCode: StatusCodes.OK,
+      headers,
       body: JSON.stringify({
         message: "File has been stored successfully",
         cids,
         inconsistentCids,
       }),
     };
-  } catch (err) {
+  } catch (err: any) {
+    console.log("Error occured : ", { err: err.message });
+
     return {
-      statusCode: 500,
+      statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+      headers,
       body: JSON.stringify({ message: err.message }),
     };
   }
