@@ -7,6 +7,7 @@ declare global {
       PRIVATE_RPC_ENDPOINT_MAINNET: string;
       PRIVATE_RPC_ENDPOINT_SEPOLIA: string;
       PRIVATE_RPC_ENDPOINT_GNOSIS: string;
+      PRIVATE_RPC_ENDPOINT_CHIADO: string;
     }
   }
 }

@@ -1,6 +1,6 @@
 import { Handler } from "@netlify/functions";
 import { StatusCodes } from "http-status-codes";
-import { mainnet, gnosis, sepolia } from "viem/chains";
+import { mainnet, gnosis, sepolia, gnosisChiado } from "viem/chains";
 import { validateChainId, validateNumber } from "../utils/validate";
 import { datalake } from "../config/supabase";
 
@@ -8,12 +8,13 @@ const headers = {
   "Access-Control-Allow-Origin": "*",
 };
 
-const chainIds = [mainnet.id, gnosis.id, sepolia.id];
+const chainIds = [mainnet.id, gnosis.id, sepolia.id, gnosisChiado.id];
 
 const chainDBName = {
   [mainnet.id]: "mainnet",
   [gnosis.id]: "gnosischain",
   [sepolia.id]: "sepolia",
+  [gnosisChiado.id]: "chiado",
 };
 
 export const handler: Handler = async (ev) => {

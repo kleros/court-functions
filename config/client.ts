@@ -1,5 +1,5 @@
 import { createPublicClient, http } from "viem";
-import { gnosis, mainnet, sepolia } from "viem/chains";
+import { gnosis, mainnet, sepolia, gnosisChiado } from "viem/chains";
 
 export const publicClient = {
   [mainnet.id]: createPublicClient({
@@ -17,6 +17,12 @@ export const publicClient = {
   [sepolia.id]: createPublicClient({
     chain: sepolia,
     transport: http(process.env.PRIVATE_RPC_ENDPOINT_SEPOLIA, {
+      timeout: 600_000,
+    }),
+  }),
+  [gnosisChiado.id]: createPublicClient({
+    chain: gnosisChiado,
+    transport: http(process.env.PRIVATE_RPC_ENDPOINT_CHIADO, {
       timeout: 600_000,
     }),
   }),
