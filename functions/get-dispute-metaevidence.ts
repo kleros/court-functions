@@ -1,6 +1,6 @@
 import { Handler } from "@netlify/functions";
 import { StatusCodes } from "http-status-codes";
-import { gnosis, mainnet, sepolia } from "viem/chains";
+import { gnosis, mainnet, sepolia, gnosisChiado } from "viem/chains";
 import { Sdk } from "../generated/graphql";
 import { sdk } from "../config/subgraph";
 import { validateChainId, validateNumber } from "../utils/validate";
@@ -11,7 +11,7 @@ const headers = {
   "Access-Control-Allow-Origin": "*",
 };
 
-const chainIds = [mainnet.id, gnosis.id, sepolia.id];
+const chainIds = [mainnet.id, gnosis.id, sepolia.id, gnosisChiado.id];
 
 export const getSubgraphData = async (
   chainId: Supported<typeof chainIds>,

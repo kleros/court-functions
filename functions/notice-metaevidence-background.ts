@@ -1,4 +1,4 @@
-import { gnosis, mainnet, sepolia } from "viem/chains";
+import { gnosis, mainnet, sepolia, gnosisChiado } from "viem/chains";
 import { klerosStartBlock } from "../config/contracts";
 import { publicClient } from "../config/client";
 import { Address, parseAbiItem } from "viem";
@@ -12,7 +12,7 @@ import { StatusCodes } from "http-status-codes";
 import { datalake } from "../config/supabase";
 import logtail from "../config/logtail";
 
-const chainIds = [mainnet.id, gnosis.id, sepolia.id];
+const chainIds = [mainnet.id, gnosis.id, sepolia.id, gnosisChiado.id];
 
 export const getMetaEvidenceUriFromLogs = async (
   chainId: Supported<typeof chainIds>,

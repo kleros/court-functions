@@ -1,7 +1,7 @@
 import { Handler } from "@netlify/functions";
 import { StatusCodes } from "http-status-codes";
 import { Address, getContract, parseAbi, recoverMessageAddress } from "viem";
-import { gnosis, mainnet, sepolia } from "viem/chains";
+import { gnosis, mainnet, sepolia, gnosisChiado } from "viem/chains";
 import { publicClient } from "../config/client";
 import { klerosAddress } from "../config/contracts";
 import { validateChainId } from "../utils/validate";
@@ -14,12 +14,13 @@ const headers = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-const chainIds = [mainnet.id, gnosis.id, sepolia.id];
+const chainIds = [mainnet.id, gnosis.id, sepolia.id, gnosisChiado.id];
 
 const chainName = {
   [mainnet.id]: "mainnet",
   [gnosis.id]: "gnosischain",
   [sepolia.id]: "sepolia",
+  [gnosisChiado.id]: "chiado",
 };
 
 interface RequestBody {

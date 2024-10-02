@@ -1,5 +1,5 @@
 import { GraphQLClient } from "graphql-request";
-import { gnosis, mainnet, sepolia } from "viem/chains";
+import { gnosis, mainnet, sepolia, gnosisChiado } from "viem/chains";
 import { Sdk, getSdk } from "../generated/graphql";
 
 const subgraphUrl = {
@@ -9,6 +9,8 @@ const subgraphUrl = {
     "https://api.studio.thegraph.com/query/61738/kleros-display-gnosis/version/latest",
   [sepolia.id]:
     "https://api.studio.thegraph.com/query/61738/kleros-display-sepolia/version/latest",
+  [gnosisChiado.id]:
+    "https://api.studio.thegraph.com/query/61738/kleros-display-chiado/version/latest",
 } as const;
 
 export const sdk = Object.entries(subgraphUrl).reduce(
