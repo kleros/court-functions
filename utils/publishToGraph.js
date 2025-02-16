@@ -16,7 +16,6 @@ export const publishToGraph = async (fileName, data) => {
     method: "POST",
     body: payload,
   });
-  console.log("response:", response);
   console.log("response body:", await response.text(), response.body);
 
   if (!response.ok) {
