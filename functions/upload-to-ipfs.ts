@@ -2,7 +2,7 @@ import { File, FilebaseClient } from "@filebase/client";
 import { Handler, HandlerEvent } from "@netlify/functions";
 import amqp, { Connection } from "amqplib";
 import busboy from "busboy";
-import { areCidsConsistent, publishToGraph } from "../utils/publishToGraph";
+import { publishToGraph } from "../utils/publishToGraph";
 import { StatusCodes } from "http-status-codes";
 
 const { FILEBASE_TOKEN, RABBITMQ_URL } = process.env;
@@ -73,27 +73,28 @@ const pinFiles = async (
   for (const [_, dataElement] of Object.entries(data)) {
     if (dataElement.isFile) {
       const { filename, mimeType, content } = dataElement;
-      const path = `${filename}`;
-      const cid = await filebase.storeDirectory([
-        new File([content], path, { type: mimeType }),
-      ]);
+
+      const filebaseCid = await filebase.storeBlob(
+        new File([content], filename, { type: mimeType })
+      );
 
       if (pinToGraph) {
-        const graphResult = await publishToGraph(filename, content);
-        if (!areCidsConsistent(cid, graphResult)) {
+        const graphCid = await publishToGraph(filename, content);
+
+        if (graphCid !== filebaseCid) {
           console.warn("Inconsistent cids from Filebase and Graph Node :", {
-            filebaseCid: cid,
-            graphCid: graphResult[1].hash,
+            filebaseCid,
+            graphCid,
           });
           inconsistentCids.push({
-            filebaseCid: cid,
-            graphCid: graphResult[1].hash,
+            filebaseCid,
+            graphCid,
           });
         }
       }
 
-      await emitRabbitMQLog(cid, operation);
-      cids.push(`/ipfs/${cid}/${path}`);
+      await emitRabbitMQLog(filebaseCid, operation);
+      cids.push(`/ipfs/${filebaseCid}`);
     }
   }
 
