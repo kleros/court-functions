@@ -72,9 +72,11 @@ const pinFiles = async (
 
   for (const [_, dataElement] of Object.entries(data)) {
     if (dataElement.isFile) {
-      const { filename, content } = dataElement;
+      const { filename, mimeType, content } = dataElement;
 
-      const filebaseCid = await filebase.storeBlob(new Blob([content]));
+      const filebaseCid = await filebase.storeBlob(
+        new File([content], filename, { type: mimeType })
+      );
 
       if (pinToGraph) {
         const graphCid = await publishToGraph(filename, content);
