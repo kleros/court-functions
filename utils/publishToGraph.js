@@ -6,7 +6,7 @@ import fetch, { Blob, FormData } from "node-fetch";
  * @returns  ipfs response. Should include the hash and path of the stored item.
  */
 export const publishToGraph = async (fileName, data) => {
-  const url = `${process.env.GRAPH_IPFS_ENDPOINT}/api/v0/add?wrap-with-directory=true`;
+  const url = `${process.env.GRAPH_IPFS_ENDPOINT}/api/v0/add`;
 
   const payload = new FormData();
   payload.append("file", new Blob([data]), fileName);
@@ -22,23 +22,7 @@ export const publishToGraph = async (fileName, data) => {
     );
   }
 
-  const result = parseNewlineSeparatedJSON(await response.text());
+  const jsonRes = await response.json();
 
-  return result.map(({ Name, Hash }) => ({
-    hash: Hash,
-    path: `/${Name}`,
-  }));
-};
-
-/**
- * @description parses json from stringified json's seperated by new line
- */
-const parseNewlineSeparatedJSON = (text) => {
-  const lines = text.trim().split("\n");
-  return lines.map((line) => JSON.parse(line));
-};
-
-export const areCidsConsistent = (filebaseCid, graphResult) => {
-  const graphCid = graphResult[1].hash;
-  return graphCid === filebaseCid;
+  return jsonRes.Hash;
 };
