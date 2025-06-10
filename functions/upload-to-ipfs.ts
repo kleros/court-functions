@@ -1,35 +1,16 @@
 import { File, FilebaseClient } from "@filebase/client";
 import { Handler, HandlerEvent } from "@netlify/functions";
-import amqp, { Connection } from "amqplib";
 import busboy from "busboy";
-import { publishToGraph } from "../utils/publishToGraph";
 import { StatusCodes } from "http-status-codes";
+import { publishToGraph } from "../utils/publishToGraph";
 
-const { FILEBASE_TOKEN, RABBITMQ_URL } = process.env;
+const { FILEBASE_TOKEN } = process.env;
 const filebase = new FilebaseClient({ token: FILEBASE_TOKEN ?? "" });
 
 type FormElement =
   | { isFile: true; filename: string; mimeType: string; content: Buffer }
   | { isFile: false; content: string };
 type FormData = { [key: string]: FormElement };
-
-const emitRabbitMQLog = async (cid: string, operation: string) => {
-  let connection: Connection | undefined;
-  try {
-    connection = await amqp.connect(RABBITMQ_URL ?? "");
-    const channel = await connection.createChannel();
-
-    await channel.assertExchange("ipfs", "topic");
-    channel.publish("ipfs", operation, Buffer.from(cid));
-
-    //eslint-disable-next-line no-console
-    console.log(`Sent IPFS CID '${cid}' to exchange 'ipfs'`);
-  } catch (err) {
-    console.warn(err);
-  } finally {
-    if (typeof connection !== "undefined") await connection.close();
-  }
-};
 
 const parseMultipart = ({
   headers,
@@ -93,7 +74,6 @@ const pinFiles = async (
         }
       }
 
-      await emitRabbitMQLog(filebaseCid, operation);
       cids.push(`/ipfs/${filebaseCid}`);
     }
   }

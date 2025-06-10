@@ -16,7 +16,6 @@
     "@logtail/node": "^0.4.5",
     "@netlify/functions": "^1.6.0",
     "@supabase/supabase-js": "^2.31.0",
-    "amqplib": "^0.10.4",
     "busboy": "^1.6.0",
     "graphql": "^16.7.1",
     "graphql-request": "^6.1.0",
