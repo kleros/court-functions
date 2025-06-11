@@ -10,11 +10,13 @@ export const publishToGraph = async (fileName, data) => {
 
   const payload = new FormData();
   payload.append("file", new Blob([data]), fileName);
+  console.log("Graph url:", url);
 
   const response = await fetch(url, {
     method: "POST",
     body: payload,
   });
+  console.log("response body:", await response.text(), response.body);
 
   if (!response.ok) {
     throw new Error(
